@@ -1,0 +1,339 @@
+/*	==================================================
+
+    Grid SCSS
+
+    ==================================================
+
+	CONTENTS:
+
+	-> Variables
+	
+	-> Mixins
+	-->> Container
+	-->> Row
+	-->> Column
+	--->>> Relative Columns
+	--->>> Constant Columns
+
+	-> Build Grid
+
+	-> Debug Colours
+              
+    ==================================================
+    -> Variables
+    ================================================== */
+	
+	$gridName: max !global;
+	$breakpoint: false !global;
+	$rowWidth: 1500px !global;
+	$rowPadding: 20px !global;
+	$columnGutter: 10px !global;
+	$baseline: 10px !global;
+	$columns: 12 !global;
+
+	$constant_columns: (
+		1: one, 
+		2: two, 
+		3: three, 
+		4: four, 
+		5: five, 
+		6: six, 
+		7: seven, 
+		8: eight, 
+		9: nine, 
+		10: ten, 
+		11: eleven, 
+		12: twelve, 
+		13: thirteen, 
+		14: fourteen, 
+		15: fifteen, 
+		16: sixteen, 
+		17: seventeen, 
+		18: eighteen, 
+		19: nineteen, 
+		20: twenty, 
+		21: twenty-one,
+		22: twenty-two,
+		23: twenty-three,
+		24: twenty-four
+	);
+
+	$relative_columns: (
+		$columns: all,
+		$columns*(3/4): three-quarters,
+		$columns*(2/3): two-thirds,
+		$columns*(1/2): half,
+		$columns*(1/3): third,
+		$columns*(1/4): quarter
+	);
+
+/*	==================================================
+    -> Mixins                                     
+    ================================================== */
+    @mixin columnWidth( $cols: 1, $maxCols: $columns ) {
+
+	    width: 100% * ( $cols / $maxCols );
+	    padding-left: $columnGutter;
+	    padding-right: $columnGutter;
+
+    	&.nest{
+
+    		padding-left: 0;
+    		padding-right: 0;
+
+    	}
+    }
+
+    @mixin leftInset ( $cols: 1, $maxCols: $columns ) {
+		
+    	margin-left: 100% * ( $cols / $maxCols );
+    }
+
+    @mixin rightInset ( $cols: 1, $maxCols: $columns ) {
+		
+    	margin-right: 100% * ( $cols / $maxCols );
+    }
+
+/*	==================================================
+    -->> Container                                     
+    ================================================== */
+	@mixin calc-container() {
+
+		.container {
+
+			box-sizing: border-box;
+			width: 100%;
+
+			&.full {
+
+				.row{
+
+					padding-left: 0;
+					padding-right: 0;
+					width: 100%;
+					max-width: none;
+
+					.column, .columns, .col, .cols{
+						padding-left: 0;
+						padding-right: 0;
+					}
+				}
+			}
+		}
+	}
+
+/*	==================================================
+    -->> Row                                       
+    ================================================== */
+	@mixin calc-row() {
+
+		.row {
+
+			box-sizing: border-box;
+			width: $rowWidth;
+			max-width: 100%;
+			position: relative;
+			padding-left: $rowPadding;
+			padding-right: $rowPadding;
+			margin: 0 auto;
+			clear: both;
+
+			&.full {
+
+				padding-left: 0;
+				padding-right: 0;
+				width: 100%;
+				max-width: none;
+
+				.column, .columns, .col, .cols{
+					padding-left: 0;
+					padding-right: 0;
+				}
+			}
+		}
+	}
+
+/*	==================================================
+    -->> Columns                                       
+    ================================================== */
+    @mixin calc-columns() {
+
+    	.column, .columns, .col, .cols {
+
+    		box-sizing: border-box;
+			float: left;
+			max-width: 100%;
+			position: relative;
+
+			&.level{
+
+				padding-bottom: 0;
+
+			}
+
+			&.nest{
+
+				padding-left: 0;
+				padding-right: 0;
+
+			}
+    	}
+
+/*	==================================================
+    --->>> Relative Columns                                       
+    ================================================== */
+    	/*
+    	 * Relative width Columns
+    	 *
+    	 * These columns are sized relative to their parent element
+    	 */
+    	@each $rel_columns, $rel_column_name in $relative_columns {
+
+    	    //	Set the Relitive columns width
+    	    .#{$rel_column_name} {
+
+    			@include columnWidth( $rel_columns );
+
+    	    }
+    	}
+
+/*	==================================================
+    --->>> Constant Columns
+    ================================================== */
+    	/*
+    	 * Constant width Columns
+    	 *
+    	 * These columns are sized relative to the grid width
+    	 */
+    	
+    	@each $column_number, $column_name in $constant_columns {
+
+    		.#{$gridName}-#{$column_number} {
+
+    			@include columnWidth( $column_number );
+
+    			@for $j from 1 through $columns {
+
+    				.#{$gridName}-#{$j} {
+
+    					@include columnWidth( $j, $column_number );
+
+    				}
+    			}
+    		}
+
+    		.#{$gridName}-left-#{$column_number} {
+
+    			@include leftInset( $column_number ); 
+    		}
+
+    		.#{$gridName}-right-#{$column_number} {
+
+    			@include rightInset( $column_number ); 
+    		}
+
+    	}
+
+    	.#{$gridName}-left-0 {
+
+    		@include leftInset( 0 ); 
+    	}
+
+    	.#{$gridName}-right-0 {
+
+    		@include rightInset( 0 ); 
+    	}
+
+    	.#{$gridName}-hidden{
+    		display: none;
+    	}
+
+    	.#{$gridName}-show{
+    		display: block;
+    	}
+    }
+
+    @mixin deactivate-responsivness(){
+
+    	.row{
+    		width: $rowWidth !important;
+    		max-width: none !important;
+    		padding-left: $rowPadding !important;
+    		padding-right: $rowPadding !important;
+    	}		
+    }
+
+/*  ==================================================
+    -> Build Grid
+    ================================================== */
+  	@mixin set-grid( $deactivate: false, $breakpoint: false ) {
+
+  		@if $breakpoint {
+
+  			@media only screen and ( max-width: $breakpoint ) {
+
+  			    @include calc-container();
+  			    @include calc-row();
+  			    @include calc-columns();
+
+  			    @if $deactivate {
+
+  			    	@include deactivate-responsivness();
+
+  			    }
+  			}
+
+  		} @else {
+
+			@include calc-container();
+			@include calc-row();
+			@include calc-columns();
+
+			@if $deactivate {
+
+				@include deactivate-responsivness();
+
+			}
+  		}
+  	}
+
+/*  ==================================================
+    -> Debug Colours
+    ================================================== */
+	/*
+	
+	.container {
+		background-color: #9999cc !important;
+		box-shadow: 0 0 8px rgba(0,0,0,0.2);
+	}
+
+	.row {
+		background-color: #66cc99 !important;
+		box-shadow: 0 0 8px rgba(0,0,0,0.2);
+	}
+
+	.column, .columns, .col, .cols {
+
+		background-color: #6699ff !important;
+		box-shadow: 0 0 8px rgba(0,0,0,0.2);
+
+		&.nest {
+
+			background-color: #5588ee !important;
+
+			.columns, .column, .col, .cols {
+				.panel {
+					background-color: #ff66cc !important;
+				}
+			}
+
+		}
+	}
+
+	.panel{
+		width: 100%;
+		background-color: #ffcc66 !important;
+		box-shadow: 0 0 8px rgba(0,0,0,0.2);
+	}
+
+	*/

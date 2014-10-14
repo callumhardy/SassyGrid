@@ -1,0 +1,601 @@
+  /*==========================================================================
+
+    Grid CSS
+
+    For mobile device grid CSS see "grid-mobile-devices.less"
+
+    ==========================================================================
+
+
+	CONTENTS:
+
+	1 - Setup      
+	2 - Mixins            
+	3 - Containers / Rows                 
+	4 - Columns            
+	5 - Nesting             
+	6 - Grid Overlay           
+	7 - Mosaic             
+	8 - Debug Colours                
+
+
+    ==========================================================================
+    1 - Setup                                        
+    ========================================================================== */
+
+	$rowWidth: 1240px !global;
+    $rowPadding: 0px !global;
+    $columnGutter: 20px !global;
+    $baseline: 10px !global;
+    $columns: 12 !global;
+	
+	//	Array of Column names
+	$constant_column_names: one, two, three, four, five, six, seven, eight, nine, ten, eleven, twelve, thirteen, fourteen, fifteen, sixteen, seventeen, eighteen, nineteen, twenty, twenty-one, twenty-two, twenty-three, twenty-four;
+
+	$constant_columns: (
+		1: one, 
+		2: two, 
+		3: three, 
+		4: four, 
+		5: five, 
+		6: six, 
+		7: seven, 
+		8: eight, 
+		9: nine, 
+		10: ten, 
+		11: eleven, 
+		12: twelve, 
+		13: thirteen, 
+		14: fourteen, 
+		15: fifteen, 
+		16: sixteen, 
+		17: seventeen, 
+		18: eighteen, 
+		19: nineteen, 
+		20: twenty, 
+		21: twenty-one,
+		22: twenty-two,
+		23: twenty-three,
+		24: twenty-four
+	);
+
+	$relative_columns: (
+		$columns: all,
+		$columns*(3/4): three-quarters,
+		$columns*(2/3): two-thirds,
+		$columns*(1/2): half,
+		$columns*(1/3): third,
+		$columns*(1/4): quarter
+	);
+	
+	//	Row Functions
+	@function rowInnerWidth() {
+		@return $rowWidth - ( $rowPadding * 2 );
+	}
+
+	@function rowGutterPercentage() {
+		@return ( $rowPadding / $rowWidth ) * 100%;
+	}
+	
+	//	Column Functions
+	@function columnWidthPixels() {
+		@return rowInnerWidth() / $columns;
+	}
+
+	@function columnInnerWidthPixels() {
+		//@return ( ( rowInnerWidth() - ( $columns * $columnGutter) ) / $columns);
+		@return columnWidthPixels() - $columnGutter;
+	}
+
+	@function columnGutterPixels() {
+		@return $columnGutter / 2;
+	}
+
+	@function columnWidthPercentage() {
+		@return $columns / 100;
+	}
+
+	@function columnGutterPercentage() {
+		@return ( $columnGutter / rowInnerWidth() ) / 2 * 100%;
+	}
+	
+	//	Mosaic Functions
+	@function mosaicHeight() {
+		@return $baseline * 29;
+	}
+
+	@function mosaicGutter() {
+		@return $baseline * 4;
+	}
+
+
+
+/*	==========================================================================
+    2 - Mixins                                           
+    ========================================================================== */
+    @mixin columnWidth( $cols: 1, $maxCols: $columns )
+    {
+	    $colWidth: ( 100% * ( $cols / $columns ) );
+	    $cw: rowInnerWidth() / $columns;
+
+	    @if $maxCols == $columns
+	    {
+			width: ((($cols * $cw) - $columnGutter) / rowInnerWidth()) * 100%;
+	    	padding-left: columnGutterPercentage();
+	    	padding-right: columnGutterPercentage();
+    	}
+    	@else
+    	{
+    		$sizeDifference: $columns / $maxCols;
+    		$nestedColumnWidth: $colWidth * $sizeDifference;
+    		$nestedColumnGutter: columnGutterPercentage() * $sizeDifference;
+
+    		width: $nestedColumnWidth - ( $nestedColumnGutter * 2 );
+    		padding-left: $nestedColumnGutter;
+    		padding-right: $nestedColumnGutter;
+    	}
+
+    	&.nest{
+
+    		width: $colWidth;
+    		padding-left: 0;
+    		padding-right: 0;
+
+    	}
+    }
+
+    @mixin setColumnWidth( $cols: 1, $maxCols: $columns )
+    {
+	    $colWidth: ( 100% * ( $cols / $columns ) );
+	    $cw: rowInnerWidth() / $columns;
+
+	    @if $maxCols == $columns
+	    {
+			width: ((($cols * $cw) - $columnGutter) / rowInnerWidth()) * 100% !important;
+	    	padding-left: columnGutterPercentage() !important;
+	    	padding-right: columnGutterPercentage() !important;
+    	}
+    	@else
+    	{
+    		$sizeDifference: $columns / $maxCols;
+    		$nestedColumnWidth: $colWidth * $sizeDifference;
+    		$nestedColumnGutter: columnGutterPercentage() * $sizeDifference;
+
+    		width: $nestedColumnWidth - ( $nestedColumnGutter * 2 ) !important;
+    		padding-left: $nestedColumnGutter !important;
+    		padding-right: $nestedColumnGutter !important;
+    	}
+
+    	&.nest{
+
+    		width: $colWidth !important;
+    		padding-left: 0 !important;
+    		padding-right: 0 !important;
+
+    	}
+    }
+
+    @mixin leftInset ( $cols: 1, $maxCols: $columns )
+    {
+    	margin-left:  100% * ( $cols / $maxCols ); 	
+    }
+
+    @mixin rightInset ( $cols: 1, $maxCols: $columns )
+    {
+    	margin-right:  100% * ( $cols / $maxCols ); 	
+    }
+
+    @mixin mosaicHeight ( $rows: 1 )
+    {
+        height: $mosaicHeight * $rows + ( $mosaicGutter * ( $rows - 1 ) );
+    }
+
+
+
+/*	==========================================================================
+    3 - Containers / Rows                                           
+    ========================================================================== */
+	@mixin calc-container()
+	{
+		.container {
+
+			box-sizing: content-box;
+			
+			width: 100%;
+			min-width: 100%;
+
+			&.full {
+				.row{
+					max-width: 100%;
+					padding: 0;
+				}
+			}
+
+			&.level {
+				.row:last-child{
+					.column{
+						padding-bottom:0;
+					}
+				}
+			}
+
+			&.overflowed{
+				overflow: hidden;	
+			}
+		}		
+	}
+
+	@mixin calc-row()
+	{
+		.row {
+
+			box-sizing: content-box;
+
+			position: relative;
+			padding-left: $rowPadding;
+			padding-right: $rowPadding;
+			margin: 0 auto;
+
+			max-width: rowInnerWidth();
+			width: 100% - ( rowGutterPercentage() * 2 );
+
+			&.full {
+				max-width: 100%;
+				padding-left: 0;
+				padding-right: 0;
+			}
+
+			&.level {
+				padding-bottom: 0;
+			}
+		}
+
+		@media only screen and (max-width: $rowWidth) {
+		
+		    .row {
+		    	padding-left: rowGutterPercentage();
+		    	padding-right: rowGutterPercentage();
+		    }
+
+		}
+	}
+
+	@mixin deactivate-responsivness(){
+		.row{
+			width: $rowWidth !important;
+			max-width: rowInnerWidth() !important;
+			padding-left: $rowPadding !important;
+			padding-right: $rowPadding !important;
+		}		
+	}
+
+
+
+/*  ==========================================================================
+    4 - Columns                                        
+    ========================================================================== */
+    @mixin calc-columns()
+    {
+		.column, .columns {
+
+			box-sizing: content-box;
+			float: left;
+			max-width: 100%;
+			position: relative;
+
+			&.level{
+				padding-bottom: 0;
+			}
+
+			&.nest{
+				padding-left: 0;
+				padding-right: 0;
+			}
+		}
+
+		/*
+		 * Relative width Columns
+		 *
+		 * These columns are sized relative to their parent element
+		 */
+		@each $rel_columns, $rel_column_name in $relative_columns
+		{
+		    //	Set the Relitive columns width
+		    .#{$rel_column_name}
+		    {
+
+				@include columnWidth( $rel_columns );
+	
+				//	Override the width for a nesting relative column
+				&.nest{
+
+			      	//width: ($rel_columns / $columns) * 100%;
+
+			    }
+		    }
+			
+			//	Loop through all 24 possible columns
+		    @for $i from 1 through $columns
+		    {
+		    	//	Set the width of Constant Width column that are Nested inside a Relative Width Column
+		    	.#{nth( $constant_column_names, $rel_columns )}
+		    	{
+		    		@include columnWidth( $rel_columns, $columns / $i );
+		    	}
+				
+				//	Set Relative Width Insets
+			    .inset-#{$rel_column_name}-left
+			    {
+			    	@include leftInset( $i );
+			    }
+			    .inset-#{$rel_column_name}-right
+			    {
+			    	@include rightInset( $i ); 
+			    }
+		    }
+		}
+		
+		/*
+		 * Constant width Columns
+		 *
+		 * These columns are sized relative to the grid width
+		 */
+		@for $i from 1 through $columns
+		{
+			.#{nth( $constant_column_names, $i )}
+			{
+				@include columnWidth( $i ); 
+
+				&.nest{
+
+					//width: 100% * ( $i / $columns );
+
+				}
+
+				@for $j from 1 through $columns
+				{
+					.#{nth( $constant_column_names, $j )}
+					{
+						@include columnWidth( $j, $i );
+
+					}
+
+					.inset-#{nth( $constant_column_names, $j )}-left
+					{
+						@include leftInset( $j, $i );
+					}
+
+					.inset-#{nth( $constant_column_names, $j )}-right
+					{
+						@include rightInset( $j, $i ); 
+					}
+				}
+			}
+
+			.inset-#{nth( $constant_column_names, $i )}-left
+			{
+				@include leftInset( $i ); 
+			}
+
+			.inset-#{nth( $constant_column_names, $i )}-right
+			{
+				@include rightInset( $i ); 
+			}
+		}    	
+    }
+
+
+
+/*  ==========================================================================
+    5 - Nesting                                        
+    ========================================================================== */
+	
+
+/*	==========================================================================
+	6 - Grid Overlay                                           
+	========================================================================== */
+	@mixin calc-grid-overlay(){
+
+		#grid-overlay {
+
+			display: block;
+
+			position: fixed;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			right: 0;
+			z-index: 1000000;
+			pointer-events: none;
+			-webkit-touch-callout: none;
+			-webkit-user-select: none;
+			-khtml-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+
+			.container {
+
+				position: absolute;
+				top: 0;
+				left: 0;
+				bottom: 0;
+				right: 0;
+				height: 100%;
+				background: -webkit-linear-gradient( rgba(0,0,0,0) $baseline - 1, rgba( 127, 127, 127, 0.25 ) 100% );
+				background: -o-linear-gradient( rgba(0,0,0,0) $baseline - 1, rgba( 127, 127, 127, 0.25 ) 100% );
+				background: -moz-linear-gradient( rgba(0,0,0,0) $baseline - 1, rgba( 127, 127, 127, 0.25 ) 100% );
+				background: linear-gradient(  rgba(0,0,0,0) $baseline - 1, rgba( 127, 127, 127, 0.25 ) 100% );
+				background-size: $baseline $baseline;
+				background-attachment: scroll;
+				
+				background-color: transparent !important;
+				box-shadow: none !important;
+
+				.row {
+
+					height: 100%;
+					background-color: rgba(0,0,0,0.1) !important;
+					box-shadow: none !important;
+
+					.column{
+						height: 100%;
+						background-image: linear-gradient( 
+							to right,
+							rgba( 0, 0, 0, 0.4 ) 0px,
+							rgba( 0, 0, 0, 0.2 ) 1px,
+							rgba( 0, 0, 0, 0.2 ) ( columnGutterPixels() - 1 ),
+							rgba( 0, 0, 0, 0.4 ) ( columnGutterPixels() ),
+							rgba( 0, 0, 0, 0.1 ) ( columnGutterPixels() + 1 ), 
+							rgba( 0, 0, 0, 0.1 ) ( columnInnerWidthPixels() + columnGutterPixels() - 1 ),
+							rgba( 0, 0, 0, 0.4) ( columnInnerWidthPixels() + columnGutterPixels() ),
+							rgba( 0, 0, 0, 0.2 ) ( columnInnerWidthPixels() + columnGutterPixels() + 1 ),
+							rgba( 0, 0, 0, 0.2 ) 100%
+						);
+
+						background-color: transparent !important;
+					}
+
+					.columns.all{
+
+						width: rowInnerWidth() - $columnGutter;
+						height: 100%;
+		
+						background-position: 0 top;
+						background-size: ( columnInnerWidthPixels() + $columnGutter ) 100%;
+						background-size: 8.34%;
+
+						background-image: linear-gradient( 
+							to right,
+							rgba( 0, 0, 0, 0.4 ) 0px,
+							rgba( 0, 0, 0, 0.2 ) 1px,
+							rgba( 0, 0, 0, 0.2 ) ( columnGutterPixels() ),
+							rgba( 0, 0, 0, 0.4 ) ( columnGutterPixels() + 1 ),
+							rgba( 0, 0, 0, 0.1 ) ( columnGutterPixels() ), 
+							rgba( 0, 0, 0, 0.1 ) ( columnInnerWidthPixels() + columnGutterPixels() - 1 ),
+							rgba( 0, 0, 0, 0.4 ) ( columnInnerWidthPixels() + columnGutterPixels() ),
+							rgba( 0, 0, 0, 0.2 ) ( columnInnerWidthPixels() + columnGutterPixels() )
+						);
+
+						/* background-image: linear-gradient( 
+							to right,
+							rgba( 0, 0, 0, 0.4 ) 0%,
+							rgba( 0, 0, 0, 0.2 ) 1%,
+							rgba( 0, 0, 0, 0.2 ) 9%,
+							rgba( 0, 0, 0, 0.1 ) 10%,
+							rgba( 0, 0, 0, 0.1 ) 90%,
+							rgba( 0, 0, 0, 0.2 ) 91%,
+							rgba( 0, 0, 0, 0.2 ) 100%
+						); */
+
+						background-color: transparent !important;
+						box-shadow: none !important;					
+					}
+				}
+			}
+		}
+
+		@media only screen and (max-width: $rowWidth) {
+		
+		    #grid-overlay{
+		    	display: none;
+		    }
+
+		}
+	}
+
+
+
+/*  ==========================================================================
+    7 - Mosaic                               
+    ========================================================================== */
+	/* .mosaic {
+		margin: 0;
+		margin-left: -$columnGutterPixels !important;
+		margin-right: -$columnGutterPixels !important;
+		padding: 0;
+
+		.block {
+			position: relative;
+			float: left;
+			display: inline;
+			margin: 0 0 $mosaicGutter;
+			margin-left: $columnGutterPixels !important;
+			margin-right: $columnGutterPixels !important;
+			padding: 0;
+			-moz-box-sizing: border-box;
+			box-sizing: border-box;
+
+			&.block-size {
+				.columnWidth( 4 );
+			}
+
+			&.size-1x1 {
+				.columnWidth( 4 );
+				.mosaicHeight( 1 );
+			}
+
+			&.size-2x1 {
+				.columnWidth( 8 );
+				.mosaicHeight( 1 );
+			}
+
+			&.size-3x1 {
+				.columnWidth( 12 );
+				.mosaicHeight( 1 );
+			}
+
+			&.size-1x2 {
+				.columnWidth( 4 );
+				.mosaicHeight( 2 );
+			}
+
+			&.size-2x2 {
+				.columnWidth( 8 );
+				.mosaicHeight( 2 );
+			}
+
+			&.size-3x2 {
+				.columnWidth( 12 );
+				.mosaicHeight( 2 );
+			}
+
+		}
+
+	} */
+
+
+
+/*  ==========================================================================
+    8 - Create Grid                                   
+    ========================================================================== */
+  	@mixin set-grid()
+  	{
+	    @include calc-container();
+	    @include calc-row();
+	    @include calc-columns();
+	    @include calc-grid-overlay();
+  	}
+
+
+
+/*  ==========================================================================
+    9 - Debug Colours                                        
+    ========================================================================== */
+	/* .container{
+		background-color: #9999cc !important;
+		box-shadow: 0 0 8px rgba(0,0,0,0.2);
+	}
+	.row{
+		background-color: #66cc99 !important;
+		box-shadow: 0 0 8px rgba(0,0,0,0.2);
+	}
+	.column, .columns{
+		background-color: #6699ff !important;
+		box-shadow: 0 0 8px rgba(0,0,0,0.2);
+	}
+	.panel{
+		background-color: #ffcc66 !important;
+		box-shadow: 0 0 8px rgba(0,0,0,0.2);
+	} */
+
